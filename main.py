@@ -2,6 +2,7 @@ import json
 from openai import OpenAI
 from dotenv import load_dotenv
 from rag import query as rag_query
+from rag2 import query as bing_data
 
 load_dotenv()
 
@@ -47,6 +48,26 @@ tools = [
         },
         "strict": True,
     },
+    {
+        "type": "function",
+        "name": "search_bing_query",
+        "description": (
+            "Search the  Bing Search History knowledge base for passages relevant to a "
+            "question. Use this whenever the user asks a Bing related question"
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Natural-language search query.",
+                }
+            },
+            "required": ["query"],
+            "additionalProperties": False,
+        },
+        "strict": True,
+    },
 ]
 
 
@@ -60,7 +81,13 @@ def search_knowledge_base(query: str):
     hits = rag_query(query)
     return "\n\n---\n\n".join(hits)
 
-FUNCTIONS = {"get_weather": get_weather, "search_knowledge_base": search_knowledge_base}
+def search_bing_query(query: str):
+    print('fn-call-rag02', query)
+    data= bing_data(query)
+    return f"\n\n--\n\n{data}"
+
+
+FUNCTIONS = {"get_weather": get_weather, "search_knowledge_base": search_knowledge_base, "search_bing_query": search_bing_query}
 
 inp= input("Input for LLM")
 input_messages = [
